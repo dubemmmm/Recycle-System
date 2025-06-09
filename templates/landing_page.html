@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Waste Management Solution</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href='{% static "css/landing_page.css" %}'>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="{% url 'landing' %}" class="logo">
+                <i class="fas fa-recycle"></i>
+                <span>EcoTrack</span>
+            </a>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="user-actions">
+                <a href="{% url 'accounts:login' %}"><button class="btn btn-outline">Login</button></a>
+                <a href="{% url 'accounts:signup' %}"><button class="btn" onclick="showPage('signup')">Sign Up</button></a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Landing Page -->
+    <div id="landing" class="page active">
+        <section class="hero">
+            <div class="container">
+                <h1>Sustainable Waste Management Solutions</h1>
+                <p>Join thousands of businesses and communities in creating a cleaner, greener planet through efficient waste tracking and management.</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'accounts:signup'%}">
+                        <button class="btn btn-secondary">
+                            <i class="fas fa-user-plus"></i>
+                            Get Started
+                        </button>
+                    </a>
+                    <button class="btn btn-outline" disabled>
+                        <i class="fas fa-play-circle"></i>
+                        Watch Demo
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Powerful Features</h2>
+                    <p>Our comprehensive waste management platform offers everything you need to track, analyze, and optimize your waste reduction efforts.</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Analytics Dashboard</h3>
+                        <p>Gain valuable insights with real-time analytics and reporting tools that help you make data-driven decisions.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Mobile Access</h3>
+                        <p>Manage your waste data on-the-go with our fully responsive design optimized for all devices.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Easy Data Upload</h3>
+                        <p>Quickly upload and manage waste data in multiple formats with our intuitive interface.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3>Smart Notifications</h3>
+                        <p>Stay informed with customizable alerts and reminders for important waste management events.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3>Compliance Reporting</h3>
+                        <p>Easily generate comprehensive reports that meet regulatory requirements and sustainability goals.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3>Report Generation</h3>
+                        <p>Ensures real time reports can be generated and downloaded in PDF format</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials">
+            <div class="container">
+                <div class="section-title">
+                    <h2>What Our Users Say</h2>
+                    <p>Discover how EcoTrack is helping organizations around the world achieve their sustainability goals.</p>
+                </div>
+                <div class="testimonials-slider">
+                    <div class="testimonials-container">
+                        <div class="testimonial">
+                            <div class="testimonial-image">
+                                <img src="/api/placeholder/80/80" alt="User Testimonial">
+                            </div>
+                            <p class="testimonial-content">"EcoTrack has revolutionized how we manage waste at our facilities. The analytics dashboard provides invaluable insights that have helped us reduce waste by 40% in just six months."</p>
+                            <h4 class="testimonial-author">Chidubem Onwuchuluba</h4>
+                            <p class="testimonial-role">User of Ecotrack</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+
+        
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>EcoTrack</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 16px;">Sustainable waste management solutions for a cleaner planet.</p>
+                    <div class="social-links">
+                        <a role="link" aria-disabled="true" class="disabled-social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a role="link" aria-disabled="true" class="disabled-social-link"><i class="fab fa-twitter"></i></a>
+                        <a role="link" aria-disabled="true" class="disabled-social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a role="link" aria-disabled="true" class="disabled-social-link"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Home</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Features</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Pricing</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">About Us</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Blog</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Help Center</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Documentation</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">API Reference</a></li>
+                        <li><a role="link" aria-disabled="true" class="disabled-social-link">Download App</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-envelope" style="margin-right:5px;"></i>onwuchulubachidubem@gmail.com</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> +234-912-908-1066</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> 123 Green Street, EcoCity</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2025 EcoTrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

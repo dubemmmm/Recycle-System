@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Waste Management Solution</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="{% url 'recycle:home' %}" class="logo">
+                <i class="fas fa-recycle"></i>
+                <span>EcoTrack</span>
+            </a>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="nav-links">
+                {% comment %} <ul>
+                    <li><a href="#" onclick="showPage('landing')">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul> {% endcomment %}
+            </nav>
+            <div class="user-actions">
+                {% if user.is_authenticated %}
+                <form action="{% url 'accounts:logout' %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn">Log Out</button>
+                </form>
+                {% else %}
+                <a href="login.html"><button class="btn btn-outline">Login</button></a>
+                <a href="signup.html"><button class="btn" onclick="showPage('signup')">Sign Up</button></a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Home Page / Dashboard -->
+    <div id="home" class="page active">
+        <div class="container">
+            <p style="color: var(--text-muted); margin-bottom: 32px;">Welcome back {{user_details.first_name}}, let's manage your waste data</p>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <p class="stat-title">Total Item Recycled</p>
+                        <div class="stat-icon">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                    </div>
+                    <h3 class="stat-value">{{ recycled_items_count }}</h3>
+                    <p class="stat-change positive-change">
+                        <i class="fas fa-arrow-down"></i>
+                        12% less than last month
+                    </p>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <p class="stat-title">Recycled</p>
+                        <div class="stat-icon">
+                            <i class="fas fa-recycle"></i>
+                        </div>
+                    </div>
+                    <h3 class="stat-value">{{ total_weight }}kg</h3>
+                    <p class="stat-change positive-change">
+                        <i class="fas fa-arrow-up"></i>
+                        8% more than last month
+                    </p>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <p class="stat-title">Carbon Offset</p>
+                        <div class="stat-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                    </div>
+                    <h3 class="stat-value">{{ total_carbon_offset }} kg CO2e</h3>
+                    <p class="stat-change positive-change">
+                        <i class="fas fa-arrow-up"></i>
+                        5% more than last month
+                    </p>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <p class="stat-title">Cost Savings</p>
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <h3 class="stat-value">$ {{ total_cost_saved }}</h3>
+                    <p class="stat-change positive-change">
+                        <i class="fas fa-arrow-up"></i>
+                        15% more than last month
+                    </p>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <div class="recent-activities">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Activities</h3>
+                        </div>
+                        <div class="activity-list">
+                            {% for activity in recent_activities %}
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        <i class="fas {% if activity.activity_type == 'upload' %}fa-file-upload{% elif activity.activity_type == 'download' %}fas fa-download{% elif activity.activity_type == 'export' %}fa-file-export{% elif activity.activity_type == 'report' %}fa-chart-pie{% elif activity.activity_type == 'schedule' %}fa-bell{% elif activity.activity_type == 'member' %}fa-user-plus{% endif %}"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <h4 class="activity-title">{{ activity.title }}</h4>
+                                        <div class="activity-meta">
+                                            <span><i class="far fa-clock"></i> {{ activity.timestamp|date:"M d, Y, h:i A" }}</span>
+                                            <span><i class="far fa-user"></i> {{ activity.user.first_name }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p>No recent activities.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-top: 24px;">
+                        <div class="card-header">
+                            <h3 class="card-title">Waste Breakdown</h3>
+                            <div>
+                                <span class="badge">Total</span>
+                            </div>
+                        </div>
+                        <div>
+                            {% if waste_breakdown.labels|length > 0 %}
+                                <canvas id="wasteBreakdownChart"></canvas>
+                            {% else %}
+                                <p>No waste breakdown data available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="card calendar" style="margin-bottom:50px">
+                        <div class="calendar-header">
+                            <h3 class="calendar-month">{{ calendar_data.month_name }}</h3>
+                            <div class="calendar-nav">
+                                <button class="calendar-nav-btn" onclick="changeMonth(-1)">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="calendar-nav-btn" onclick="changeMonth(1)">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="calendar-weekdays">
+                            {% for weekday in calendar_data.weekdays %}
+                                <div>{{ weekday }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="calendar-days">
+                            {% for day in calendar_data.days %}
+                                <div class="calendar-day {{ day.class }} {% if day.has_event %}has-event{% endif %}">
+                                    {{ day.day }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Quick Actions</h3>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <a href="{% url 'recycle:upload' %}">
+                            <button class="btn" style="width: 100%;">
+                                <i class="fas fa-file-upload"></i>
+                                Upload New Data
+                            </button>
+                            </a>
+                            <a href="{% url 'recycle:export_report'%}">
+                            <button class="btn btn-outline" style="width: 100%;">
+                                <i class="fas fa-file-export"></i>
+                                Export Report
+                            </button>
+                            </a>
+                            <button class="btn btn-outline2" style="width: 100%;" disabled>
+                                <i class="fas fa-calendar-plus"></i>
+                                Schedule Collection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- footer html  -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>EcoTrack</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 16px;">Sustainable waste management solutions for a cleaner planet.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Download App</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-envelope"></i> onwuchulubachidubem@gmail.com</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> +234-912-908-1066</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> 123 Green Street, EcoCity</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2025 EcoTrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <!-- Include Chart.js -->
+    <!-- ... (previous HTML content) ... -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // Render pie chart if data exists
+    if ({{ waste_breakdown.labels|length }} > 0) {
+        const ctx = document.getElementById('wasteBreakdownChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: {{ waste_breakdown.labels|safe }},
+                datasets: [{
+                    label: 'Waste Breakdown by Weight (kg)',
+                    data: {{ waste_breakdown.weights|safe }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allow custom size
+                width: 250, // Set custom width in pixels
+                height: 250, // Set custom height in pixels
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Waste Breakdown by Material'
+                    }
+                }
+            }
+        });
+    }
+    // Calendar navigation
+    let currentYear = {{ calendar_data.current_year }};
+    let currentMonth = {{ calendar_data.current_month }}; // 1-12
+
+    function changeMonth(delta) {
+        currentMonth += delta;
+
+        // Adjust year if month goes out of bounds
+        if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear -= 1;
+        } else if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear += 1;
+        }
+
+        // Fetch updated calendar data via AJAX
+        fetch(`/recycle/calendar/${currentYear}/${currentMonth}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Update calendar header
+                document.querySelector('.calendar-month').textContent = data.month_name;
+
+                // Update calendar days
+                const calendarDays = document.querySelector('.calendar-days');
+                calendarDays.innerHTML = '';
+                data.days.forEach(day => {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = `calendar-day ${day.class} ${day.has_event ? 'has-event' : ''}`;
+                    dayDiv.textContent = day.day;
+                    calendarDays.appendChild(dayDiv);
+                });
+            })
+            .catch(error => console.error('Error fetching calendar:', error));
+    }
+</script>
+</body>
+</html>

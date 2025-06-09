@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Waste Management Solution</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/upload.css' %}">
+    <link rel="stylesheet" href="{% static 'css/result.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="{% url 'landing' %}" class="logo">
+                <i class="fas fa-recycle"></i>
+                <span>EcoTrack</span>
+            </a>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="nav-links">
+            </nav>
+            <div class="user-actions">
+                {% if user.is_authenticated %}
+                    <span class="welcome-text">Welcome, {{user_details.first_name}}</span>
+                    <a href="{% url 'accounts:logout' %}"><button class="btn btn-outline">Logout</button></a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}"><button class="btn btn-outline">Login</button></a>
+                    <a href="{% url 'accounts:signup' %}"><button class="btn">Sign Up</button></a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Upload Page -->
+    <div id="upload" class="page active">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'recycle:home' %}">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <span>></span>
+                <span>Upload</span>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 32px;">Upload and manage your waste data files</p>
+            <div>
+                <form method="post" enctype="multipart/form-data" id="uploadForm" action="{% url 'recycle:upload' %}">
+                    {% csrf_token %}
+                    {# Hidden Django form field that will be populated by our custom upload UI #}
+                    <div style="display:none;">
+                        {{ form.file }}
+                    </div>
+                    <div class="upload-area" id="dropZone">
+                        <img id="dropZonePreview" style="max-width: 600px; max-height: 300px; display: none; object-fit: contain; margin: 0 auto;" alt="Image preview">
+                        <div id="drop-zone-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h3 class="upload-title">Drag & Drop Files Here</h3>
+                            <p class="upload-desc">or click to browse your files</p>
+                            <button type="button" class="btn" id="browseBtn">
+                                <i class="fas fa-file"></i>
+                                Select Files
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview area for the selected file (to keep remove button) -->
+                    <div id="filePreview" style="display:none; margin-top: 20px;" class="file-preview">
+                        <h3>Selected File:</h3>
+                        <div class="preview-item">
+                            <div class="preview-details">
+                                <h4 id="fileName"></h4>
+                                <p id="fileSize"></p>
+                            </div>
+                            <button type="button" class="preview-action" id="removeFile">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit button -->
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="margin-top: 20px; margin-bottom: 0; display: none;">
+                        <i class="fas fa-upload"></i> Upload & Analyze
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Recent Uploads Section -->
+            <div class="upload-list">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Uploads</h3>
+                    {% if recent_uploads|length > 4 %}
+                        <button id="view-all-btn" class="card-action">
+                            View All
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    {% endif %}
+                </div>
+                
+                {% if recent_uploads %}
+                    {% for upload in recent_uploads %}
+                    <div class="upload-item {% if forloop.counter > 4 %}hidden-upload{% endif %}" id="upload-{{ forloop.counter }}" style="{% if forloop.counter > 4 %}display: none;{% endif %}">
+                        
+                        <div class="upload-item-icon">
+                            {% if upload.file_type in 'jpeg jpg png gif' %}
+                                <i class="fas fa-file-image"></i>
+                            {% else %}
+                                <i class="fas fa-file"></i>
+                            {% endif %}
+                        </div>
+                        <div class="upload-item-details">
+                            <h4 class="upload-item-name">{{ upload.filename }}</h4>
+                            <div class="upload-item-meta">
+                                <span><i class="far fa-clock"></i> {{ upload.uploaded_at|date:"M d, Y, h:i A" }}</span>
+                                <span>
+                                    {% if upload.status == 'completed' %}
+                                        <i class="fas fa-check-circle text-success"></i> Completed
+                                    {% elif upload.status == 'processing' %}
+                                        <i class="fas fa-spinner text-warning"></i> Processing
+                                    {% elif upload.status == 'failed' %}
+                                        <i class="fas fa-times-circle text-danger"></i> Failed
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% if upload.progress < 100 and upload.progress > 0 %}
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar" style="width: {{ upload.progress }}%;"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="upload-item-actions">
+                            <a href="{% url 'recycle:view_upload' upload.id %}" class="upload-action">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'recycle:download_upload' upload.id %}" class="upload-action">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <form action="{% url 'recycle:delete_upload' upload.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="upload-action delete-upload">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div> 
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-uploads-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No files have been uploaded yet. Your recent uploads will appear here.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="upload-tips">
+                <div class="card-header">
+                    <h3 class="card-title">Upload Tips</h3>
+                </div>
+                <ul class="tips-list">
+                    <li>
+                        <div class="tip-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <strong>Supported formats:</strong> JPG, JPEG, PNG, GIF images. Maximum file size is 10MB.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="tip-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <strong>Better results:</strong> Clear, well-lit images of waste items work best for accurate recycling analysis.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="tip-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <strong>Single items:</strong> Upload one waste item at a time for best analysis results.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>EcoTrack</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 16px;">Sustainable waste management solutions for a cleaner planet.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{% url 'landing' %}">Home</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Download App</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-envelope"></i> onwuchulubachidubem@gmail.com</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> +234-912-908-1066</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> 123 Green Street, EcoCity</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2025 EcoTrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            document.querySelector('.user-actions').classList.toggle('active');
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // File upload handling
+            const dropZone = document.getElementById('dropZone');
+            const browseBtn = document.getElementById('browseBtn');
+            const filePreview = document.getElementById('filePreview');
+            const fileNameElement = document.getElementById('fileName');
+            const fileSizeElement = document.getElementById('fileSize');
+            const removeFileBtn = document.getElementById('removeFile');
+            const submitBtn = document.getElementById('submitBtn');
+            const viewAllBtn = document.getElementById('view-all-btn');
+            const dropZonePreview = document.getElementById('dropZonePreview');
+            const dropZoneContent = document.getElementById('drop-zone-content');
+            
+            // Get the actual file input
+            const djangoFileInput = document.getElementById('id_file');
+            
+            if (djangoFileInput) {
+                // Handle click on the browse button
+                browseBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    djangoFileInput.click();
+                });
+                
+                // Handle click on the drop zone (except when clicking the browse button)
+                dropZone.addEventListener('click', function(e) {
+                    if (e.target !== browseBtn && !browseBtn.contains(e.target)) {
+                        djangoFileInput.click();
+                    }
+                });
+                
+                // Prevent default behavior for drag events
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }, false);
+                });
+                
+                // Highlight drop zone when dragging over it
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, function() {
+                        dropZone.classList.add('active');
+                    }, false);
+                });
+                
+                // Remove highlight when leaving or dropping
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, function() {
+                        dropZone.classList.remove('active');
+                    }, false);
+                });
+                
+                // Handle file drop
+                dropZone.addEventListener('drop', function(e) {
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        handleFile(files[0]);
+                    }
+                }, false);
+                
+                // Handle file selection via input
+                djangoFileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        handleFile(this.files[0]);
+                    }
+                });
+                
+                // Remove file
+                removeFileBtn.addEventListener('click', function() {
+                    djangoFileInput.value = '';
+                    filePreview.style.display = 'none';
+                    submitBtn.style.display = 'none';
+                    dropZonePreview.style.display = 'none';
+                    dropZonePreview.src = '';
+                    if (dropZonePreview.objectURL) {
+                        URL.revokeObjectURL(dropZonePreview.objectURL);
+                        dropZonePreview.objectURL = null;
+                    }
+                    dropZoneContent.style.display = 'block';
+                });
+                
+                function handleFile(file) {
+                    // Check if file is an image
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please select an image file (JPEG, PNG, GIF)');
+                        return;
+                    }
+                    
+                    // Check file size (max 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('File is too large. Maximum size is 10MB.');
+                        return;
+                    }
+                    
+                    // Update the Django form input
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    djangoFileInput.files = dataTransfer.files;
+                    
+                    // Show file name and size in preview area
+                    fileNameElement.textContent = file.name;
+                    fileSizeElement.textContent = formatFileSize(file.size);
+                    
+                    // Show image preview in drop zone
+                    if (dropZonePreview.objectURL) {
+                        URL.revokeObjectURL(dropZonePreview.objectURL);
+                    }
+                    dropZonePreview.objectURL = URL.createObjectURL(file);
+                    dropZonePreview.src = dropZonePreview.objectURL;
+                    dropZonePreview.style.display = 'block';
+                    dropZoneContent.style.display = 'none';
+                    
+                    // Show preview and submit button
+                    filePreview.style.display = 'block';
+                    submitBtn.style.display = 'block';
+                }
+                
+                function formatFileSize(bytes) {
+                    if (bytes < 1024) {
+                        return bytes + ' bytes';
+                    } else if (bytes < 1048576) {
+                        return (bytes / 1024).toFixed(1) + ' KB';
+                    } else {
+                        return (bytes / 1048576).toFixed(1) + ' MB';
+                    }
+                }
+            } else {
+                console.error('File input not found. Check that your Django form includes a field named "file"');
+            }
+
+            // Handle delete buttons for uploads
+            document.querySelectorAll('.delete-upload').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    if (!confirm('Are you sure you want to delete this upload?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Toggle uploads visibility
+            if (viewAllBtn) {
+                viewAllBtn.addEventListener('click', function() {
+                    const hiddenUploads = document.querySelectorAll('.upload-item');
+                    const isExpanded = viewAllBtn.textContent.includes('Show Less');
+                    
+                    hiddenUploads.forEach((upload, index) => {
+                        if (index >= 4) {
+                            if (isExpanded) {
+                                upload.style.display = 'none';
+                                upload.classList.add('hidden-upload');
+                            } else {
+                                upload.style.display = 'flex';
+                                upload.classList.remove('hidden-upload');
+                            }
+                        }
+                    });
+                    
+                    viewAllBtn.innerHTML = isExpanded 
+                        ? 'View All <i class="fas fa-chevron-right"></i>'
+                        : 'Show Less <i class="fas fa-chevron-up"></i>';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

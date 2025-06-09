@@ -1,0 +1,21 @@
+# General
+*.log
+*.tmp
+*.bak
+*.swp
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+
+# Python/Django specific (if applicable)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/

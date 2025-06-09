@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+{% load static %}
+{% load static recycle_filters %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack - Recycling Results</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="{% static 'css/result.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="{% url 'recycle:home' %}" class="logo" >
+                <i class="fas fa-recycle"></i>
+                <span>EcoTrack</span>
+            </a>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <nav class="nav-links">
+                {% comment %} <ul>
+                    <li><a href="{% url 'recycle:home' %}">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul> {% endcomment %}
+            </nav>
+            <div class="user-actions">
+                {% if user.is_authenticated %}
+                <form action="{% url 'accounts:logout' %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn">Log Out</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container" style="padding: 40px 20px;">
+        <div class="breadcrumb">
+            <a href="{% url 'recycle:home' %}">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <span>></span>
+            <a href="{% url 'recycle:upload' %}">Upload</a>
+            <span>></span>
+            <span>Results</span>
+        </div>
+
+        <div class="result-container">
+            <div class="result-header">
+                <div class="result-icon">
+                    <i class="fas fa-wine-bottle"></i>
+                </div>
+                <div class="result-title-section">
+                    <h2>{{upload.item_name}}</h2>
+                    <span class="result-badge recyclable">Recyclable</span>
+                </div>
+            </div>
+
+            <div class="result-content">
+                <div class="result-image">
+                    <img src="{{ upload.file.url }}" alt="Glass Bottle" />
+                </div>
+
+                <div class="result-instructions">
+                    <div class="instruction-box">
+                        <h3><i class="fas fa-info-circle"></i> Item Information</h3>
+                        <p>{{upload.item_description}}</p>
+                        <div class="materials-section">
+                            <h4>Materials</h4>
+                            <div class="materials-list">
+                                    <span class="material-tag">{{upload.item_composition}}</span>              
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="instruction-box">
+                        <h3><i class="fas fa-recycle"></i> Recycling Instructions</h3>
+                        <ul class="instruction-list">
+                            {% for instruction in upload.recycling_instructions|split:"."|slice:"::-1" %}
+                                {% if instruction|trim %}
+                                    <li>{{ instruction|trim }}.</li>
+                                {% endif %}
+                            {% empty %}
+                                <li>No instructions available.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="instruction-box">
+                        <h3><i class="fas fa-map-marker-alt"></i> Local Disposal Options</h3>
+                        <p>Based on your location, here are nearby recycling facilities that accept glass bottles:</p>
+                        
+                        <div class="facility">
+                            <div class="facility-header">
+                                <strong>{{upload.recycling_center_name}}</strong>
+                                <span>2.3 miles</span>
+                            </div>
+                            <p class="facility-address">{{upload.recycling_location}}</p>
+                        </div>
+                        
+                        
+                        <a href="{% url 'recycle:download_instructions' pk=upload.pk %}">
+                        <button class="btn map-button">
+                            <i class="fas fa-download"></i>
+                            Download Report
+                        </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="related-items">
+            <div class="card-header">
+                <h3 class="card-title">Similar Items</h3>    
+            </div>
+            
+            <div class="items-grid">
+                {% if similar_items %}
+                {% for item in similar_items %}
+                <div class="item-card">
+                    <div class="item-image">
+                        <img src="/api/placeholder/240/160" alt="img" />
+                    </div>
+                    <div class="item-content">
+                        <h4 class="item-title">{{item}}</h4>
+                        <span class="result-badge recyclable small">Recyclable</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                
+                
+            </div>
+        </div>
+        
+        <div class="scan-another">
+            <h3>Scan Another Item</h3>
+            <div class="scan-buttons">
+                <a href="{% url 'recycle:upload' %}">
+                    <button class="btn" disabled>
+                        <i class="fas fa-camera"></i>
+                        Scan with Camera
+                    </button>
+                </a>
+                <a href="{% url 'recycle:upload' %}">
+                    <button class="btn btn-outline">
+                        <i class="fas fa-upload"></i>
+                        Upload Photo
+                    </button>
+                </a>
+                </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>EcoTrack</h3>
+                    <p>Sustainable waste management solutions for a cleaner planet.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Download App</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-envelope"></i> onwuchulubachidubem@gmail.com</a></li>
+                        <li><a href="#"><i class="fas fa-phone"></i> +234-912-908-1066</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> 123 Green Street, EcoCity</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2025 EcoTrack. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+            document.querySelector('.user-actions').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
