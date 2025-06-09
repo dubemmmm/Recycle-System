@@ -23,3 +23,7 @@ EcoTrack is a Django-powered web application designed to promote sustainable was
 
 ## Screenshots
 Explore the key interfaces of EcoTrack through the following screenshots:
+
+### Upload Page
+![Upload Page](recycle_apps_pics/upload.png)
+- Features a drag-and-drop area for uploading waste data files and a list of recent uploads.
