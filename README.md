@@ -39,6 +39,14 @@ Explore the key interfaces of EcoTrack through the following screenshots:
 ![Dashboard Page](recycle-apps-pics/home.png)
 - Provides an overview of recycling stats, a calendar, waste breakdown chart, and quick action buttons.
 
+### Item Details Page
+![Item Details Page](recycle-apps-pics/report.png)
+- Shows detailed information about a specific item, including materials, recycling instructions, and disposal options.
+
 ### Password Reset Request Page
-![Password Reset Request Page](recycle-apps-pics/forgot//password.png)
+![Password Reset Request Page](recycle-apps-pics/forgot_password.png)
 - Enables users to request a password reset link by entering their email.
+
+### Password Reset Done Page
+![Password Reset Done Page](recycle-apps-pics/forgot_password_email_sent.png)
+- Confirms that a password reset email has been sent with instructions.
