@@ -50,3 +50,7 @@ Explore the key interfaces of EcoTrack through the following screenshots:
 ### Password Reset Done Page
 ![Password Reset Done Page](recycle-apps-pics/forgot_password_email_sent.png)
 - Confirms that a password reset email has been sent with instructions.
+
+### Change Password
+![Change Password Page](recycle-apps-pics/forgot_password_set_new_password.png)
+- Confirms that a password reset email has been sent with instructions.
