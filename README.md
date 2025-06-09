@@ -24,6 +24,21 @@ EcoTrack is a Django-powered web application designed to promote sustainable was
 ## Screenshots
 Explore the key interfaces of EcoTrack through the following screenshots:
 
+### Landing Page
+![Upload Page](recycle-apps-pics/landing.png)
+
+### Login Page
+![Login Page](recycle-apps-pics/login.png)
+- Offers a login form with social media login options (Google, Microsoft).
+
 ### Upload Page
-![Upload Page](recycle_apps_pics/upload.png)
+![Upload Page](recycle-apps-pics/upload.png)
 - Features a drag-and-drop area for uploading waste data files and a list of recent uploads.
+
+### Dashboard Page
+![Dashboard Page](recycle-apps-pics/home.png)
+- Provides an overview of recycling stats, a calendar, waste breakdown chart, and quick action buttons.
+
+### Password Reset Request Page
+![Password Reset Request Page](recycle-apps-pics/forgot//password.png)
+- Enables users to request a password reset link by entering their email.
